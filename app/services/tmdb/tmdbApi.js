@@ -17,6 +17,38 @@ export const tmdbApi = {
         return res.json();
     },
 
+    // Get all movie genres
+    getGenres: async () => {
+        const res = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=en-US`);
+        if (!res.ok) {
+            throw new Error('Failed to fetch movie genres');
+        }
+        const data = await res.json();
+        return data.genres;
+    },
+
+    // Get movies with filtesrs
+    discoverMovies: async ({ genre, rating, sortBy, page }) => {
+        const params = new URLSearchParams({
+            api_key: API_KEY,
+            language: 'en-US',
+            page: page || 1,
+            'vote_average.gte': rating || 0,
+            sort_by: sortBy || 'popularity.desc',
+        });
+
+        if (genre) {
+            params.append('with_genres', genre);
+        }
+
+        const res = await fetch(`${BASE_URL}/discover/movie?${params.toString()}`);
+
+        if (!res.ok) {
+            throw new Error('Failed to fetch discovered movies');
+        }
+        return res.json();
+    },
+
     // Get movie details
     getMovie: async (id) => {
         const res = await fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}&language=en-US`);

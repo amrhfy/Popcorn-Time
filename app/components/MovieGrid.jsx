@@ -1,40 +1,52 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { tmdbApi } from '../services/tmdb/tmdbApi';
 import Movie from './Movie';
 
 
-function MovieGrid({ currentPage }) {
+function MovieGrid({ currentPage, filters }) {
 
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
+  
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
+
     const fetchMovies = async () => {
       setLoading(true);
       setError(null);
+      
       try {
-        const data = await tmdbApi.getNowPlaying(currentPage);
-        setMovies(data.results);
-        setTotalPages(Math.min(data.total_pages, 500));
+          const data = await tmdbApi.discoverMovies({
+            genre: filters.genre,
+            rating: filters.rating,
+            sortBy: filters.sortBy,
+            page: filters.page,
+          });
+          setMovies(data.results);
+          setTotalPages(Math.min(data.total_pages, 500));
       } catch (err) {
-        setError(err.message);
+          setError(err.message);
       } finally {
-        setLoading(false);
+          setLoading(false);
       }
     };
 
     fetchMovies();
     window.scrollTo(0, 0);
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   const handlePageChange = (newPage) => {
-    router.push(`/?page=${newPage}`);
+    const current = new URLSearchParams(searchParams);
+    current.set('page', newPage.toString());
+    router.push(`${pathname}?${current.toString()}`);
   }
 
   if (loading) {
