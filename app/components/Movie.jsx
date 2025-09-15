@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 
-function Movie({ movie }) {
+function Movie({ movie, onMovieClick }) {
 
   if (!movie) {
       return null;
@@ -13,7 +13,10 @@ function Movie({ movie }) {
       : "https://via.placeholder.com/500x750?text=No+Image"; // Fallback image
 
   return (
-      <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300">
+      <div
+      className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer"
+      onClick={() => onMovieClick(movie)}
+      >
         <div className="aspect-[2/3] overflow-hidden">
           <Image 
             src={imageUrl} 

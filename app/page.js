@@ -20,6 +20,9 @@ async function Home({ searchParams }) {
       <div className="mb-8 flex flex-col gap-4 text-center">
         <h1 className="text-3xl font-bold">Now Playing Movies</h1>
         <span className="text-gray-600">I like my site fast, not pretty.</span>
+        <div className="text-sm text-gray-500">
+          Powered by <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" className="underline">TMDb</a>
+        </div>
       </div>
 
       <Filter />

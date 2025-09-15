@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { tmdbApi } from '../services/tmdb/tmdbApi';
 import Movie from './Movie';
+import Modal from './Modal';
 
 
 function MovieGrid({ currentPage, filters }) {
@@ -12,6 +13,7 @@ function MovieGrid({ currentPage, filters }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
+  const [selectedMovie, setSelectedMovie] = useState(null);
   
   const router = useRouter();
   const pathname = usePathname();
@@ -62,7 +64,7 @@ function MovieGrid({ currentPage, filters }) {
     <div>
       <div className="gap-3 sm:gap-4 lg:gap-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {movies.map((movie) => (
-          <Movie key={movie.id} movie={movie} />
+          <Movie key={movie.id} movie={movie} onMovieClick={setSelectedMovie} />
         ))}
       </div>
 
@@ -97,6 +99,13 @@ function MovieGrid({ currentPage, filters }) {
           </svg>
         </button>
       </div>
+      
+      {selectedMovie && (
+        <Modal 
+          movie={selectedMovie} 
+          onClose={() => setSelectedMovie(null)} 
+        />
+      )}
     </div>
 
   );
