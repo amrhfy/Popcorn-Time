@@ -4,8 +4,13 @@ const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 export const tmdbApi = {
     
     // Get playing now movies
-    getNowPlaying: async () => {
-        const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}&language=en-US&page=1`);
+    getNowPlaying: async (page = 1) => {
+        const res = await fetch(
+            `${BASE_URL}/movie/now_playing?api_key=${API_KEY}&page=${page}&language=en-US`,
+            {
+                cache: 'force-cache'
+            }
+        );
         if (!res.ok) {
             throw new Error('Failed to fetch now playing movies');
         }

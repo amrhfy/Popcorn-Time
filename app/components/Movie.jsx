@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 function Movie({ movie }) {
 
@@ -9,14 +10,16 @@ function Movie({ movie }) {
   // Construct the full image URL
   const imageUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : "https://via.placeholder.com/500x750?text=No+Image";; // Fallback image
+    : "https://via.placeholder.com/500x750?text=No+Image"; // Fallback image
 
   return (
-    <div className="group relative bg-white shadow-sm hover:shadow-lg rounded-xl overflow-hidden transition-all duration-300">
+    <div className="group relative bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-300">
       <div className="aspect-[2/3] overflow-hidden">
-        <img 
+        <Image 
           src={imageUrl} 
           alt={movie.title} 
+          width={500}
+          height={750}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
         />
       </div>
