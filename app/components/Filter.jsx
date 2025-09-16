@@ -8,6 +8,8 @@ const sortOptions = [
     { value: 'popularity.desc', label: 'Popular' },
     { value: 'vote_average.desc', label: 'Rated' },
     { value: 'release_date.desc', label: 'Latest' },
+    { value: 'title.asc', label: 'Title (A-Z)' },
+    { value: 'title.desc', label: 'Title (Z-A)' },
 ];
 
 function Filter() {
@@ -16,9 +18,35 @@ function Filter() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
+    const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+    const [alphaSort, setAlphaSort] = useState(
+        searchParams.get('sortBy') === 'title.asc' ? 'asc' :
+        searchParams.get('sortBy') === 'title.desc' ? 'desc' : null
+    );
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchInput !== (searchParams.get('search') || '')) {
+                handleFilterChange('search', searchInput);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
     useEffect(() => {
         tmdbApi.getGenres().then(setGenres).catch(console.error);
     }, []);
+
+    useEffect(() => {
+        const sortBy = searchParams.get('sortBy');
+        if (sortBy === 'title.asc') {
+            setAlphaSort('asc');
+        } else if (sortBy === 'title.desc') {
+            setAlphaSort('desc');
+        } else {
+            setAlphaSort(null);
+        }
+    }, [searchParams]);
 
     const handleFilterChange = (key, value) => {
         const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -33,12 +61,35 @@ function Filter() {
         router.push(`${pathname}${query}`);
     }
 
+    const toggleAlphaSort = () => {
+        let newSort;
+        if (alphaSort === 'asc') {
+            newSort = 'title.desc';
+            setAlphaSort('desc');
+        } else {
+            newSort = 'title.asc';
+            setAlphaSort('asc');
+        }
+        handleFilterChange('sortBy', newSort);
+    };
+
     const hasActiveFilters = searchParams.get('genre') ||
+        searchParams.get('search') ||
         (searchParams.get('rating') && searchParams.get('rating') !== '0') ||
         (searchParams.get('sortBy') && searchParams.get('sortBy') !== 'popularity.desc');
 
     return (
         <div className="flex flex-wrap justify-center items-center gap-2 mb-6">
+
+        {/* Search */}
+        <input 
+            type="text"
+            placeholder='Search movies...'
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="bg-gray-800/80 px-3 py-2 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 w-full max-w-xs text-white text-sm"
+            />
+
         {/* Genre */}
         <select
             onChange={(e) => handleFilterChange('genre', e.target.value)}
@@ -76,10 +127,25 @@ function Filter() {
             ))}
         </select>
 
+        {/* Alphabetical Sort Button */}
+        <button
+            onClick={toggleAlphaSort}
+            className={`px-3 py-2 rounded-md text-sm transition-colors ${
+                alphaSort
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-800/80 text-white hover:bg-gray-700'
+            }`}
+        >
+            A-Z {alphaSort === 'asc' ? '↑' : alphaSort === 'desc' ? '↓' : ''}
+        </button>
+
         {/* Clear - only show when filters are active */}
         {hasActiveFilters && (
             <button
-            onClick={() => router.push(pathname)}
+            onClick={() => {
+                setSearchInput('');
+                router.push(pathname);
+            }}
             className="ml-2 px-2 py-1 rounded text-gray-500 hover:text-gray-300 text-sm transition-colors"
             >
             ×

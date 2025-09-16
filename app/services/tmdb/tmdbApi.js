@@ -67,6 +67,15 @@ export const tmdbApi = {
         return res.json();
     },
 
+    // Get movie credits (cast and crew)
+    getMovieCredits: async (id) => {
+        const res = await fetch(`${BASE_URL}/movie/${id}/credits?api_key=${API_KEY}&language=en-US`);
+        if (!res.ok) {
+            throw new Error(`Failed to fetch credits for movie with id ${id}`);
+        }
+        return res.json();
+    },
+
     // Search movies
     searchMovies: async (query) => {
         const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=en-US&query=${encodeURIComponent(query)}&page=1&include_adult=false`);

@@ -6,14 +6,19 @@ import { tmdbApi } from '../services/tmdb/tmdbApi';
 
 function Modal ({ movie, onClose }) {
     const [ details, setDetails ] = useState(null);
+    const [ cast, setCast ] = useState([]);
     const [ loading, setLoading ] = useState(true);
 
     useEffect(() => {
         if (movie) {
             setLoading(true);
-            tmdbApi.getMovieDetails(movie.id)
-                .then(data => {
-                    setDetails(data);
+            Promise.all([
+                tmdbApi.getMovieDetails(movie.id),
+                tmdbApi.getMovieCredits(movie.id)
+            ])
+                .then(([movieDetails, credits]) => {
+                    setDetails(movieDetails);
+                    setCast(credits.cast ? credits.cast.slice(0, 6) : []); // Get top 6 cast members
                     setLoading(false);
                 })
                 .catch(err => {
@@ -121,9 +126,35 @@ return (
 
                             {/* Overview */}
                             <h3 className="mb-2 font-semibold text-base sm:text-lg">Overview</h3>
-                            <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
+                            <p className="text-gray-700 text-sm sm:text-base leading-relaxed mb-4">
                                 {details.overview}
                             </p>
+
+                            {/* Cast */}
+                            {cast.length > 0 && (
+                                <>
+                                    <h3 className="mb-2 font-semibold text-base sm:text-lg">Cast</h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                                        {cast.map(actor => (
+                                            <div key={actor.id} className="flex items-center gap-2">
+                                                <Image
+                                                    src={actor.profile_path
+                                                        ? `https://image.tmdb.org/t/p/w92${actor.profile_path}`
+                                                        : 'https://via.placeholder.com/92x138?text=No+Image'}
+                                                    alt={actor.name}
+                                                    width={40}
+                                                    height={60}
+                                                    className="rounded object-cover"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-gray-900 truncate">{actor.name}</p>
+                                                    <p className="text-xs text-gray-500 truncate">{actor.character}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
                         </>
                     ) : (
                         <p className="text-red-500 text-center py-8">Could not load movie details.</p>
