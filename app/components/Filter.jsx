@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { tmdbApi } from '../services/tmdb/tmdbApi';
 
 const sortOptions = [
     { value: 'popularity.desc', label: 'Popular' },
@@ -12,28 +11,20 @@ const sortOptions = [
     { value: 'title.desc', label: 'Title (Z-A)' },
 ];
 
-function Filter() {
+function Filter({ onSearchClick }) {
     const [genres, setGenres] = useState([]);
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
     const [alphaSort, setAlphaSort] = useState(
         searchParams.get('sortBy') === 'title.asc' ? 'asc' :
         searchParams.get('sortBy') === 'title.desc' ? 'desc' : null
     );
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (searchInput !== (searchParams.get('search') || '')) {
-                handleFilterChange('search', searchInput);
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchInput]);
 
     useEffect(() => {
+        const { tmdbApi } = require('../services/tmdb/tmdbApi');
         tmdbApi.getGenres().then(setGenres).catch(console.error);
     }, []);
 
@@ -73,30 +64,34 @@ function Filter() {
         handleFilterChange('sortBy', newSort);
     };
 
+
     const hasActiveFilters = searchParams.get('genre') ||
-        searchParams.get('search') ||
         (searchParams.get('rating') && searchParams.get('rating') !== '0') ||
         (searchParams.get('sortBy') && searchParams.get('sortBy') !== 'popularity.desc');
 
     return (
-        <div className="flex flex-wrap justify-center items-center gap-2 mb-6">
+        <div className="flex flex-wrap justify-center items-center gap-4">
 
-        {/* Search */}
-        <input 
-            type="text"
-            placeholder='Search movies...'
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="bg-gray-800/80 px-3 py-2 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 w-full max-w-xs text-white text-sm"
-            />
+        {/* Search Icon */}
+        <button
+            onClick={onSearchClick}
+            className="bg-white bordered-button px-4 py-2.5 rounded-lg text-gray-700 hover:text-gray-900 transition-colors flex items-center gap-2"
+            title="Search movies (Ctrl+K)"
+        >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span className="hidden sm:inline font-medium">Search</span>
+            <span className="hidden lg:inline text-xs bg-gray-100 px-2 py-1 rounded border border-gray-300">Ctrl+K</span>
+        </button>
 
         {/* Genre */}
         <select
             onChange={(e) => handleFilterChange('genre', e.target.value)}
             value={searchParams.get('genre') || ''}
-            className="bg-gray-800/80 px-3 py-2 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 text-white text-sm"
+            className="bg-white bordered-input px-4 py-2.5 rounded-lg text-gray-900 cursor-pointer"
         >
-            <option value="">Genre</option>
+            <option value="">All Genres</option>
             {genres.map((genre) => (
             <option key={genre.id} value={genre.id}>{genre.name}</option>
             ))}
@@ -106,9 +101,9 @@ function Filter() {
         <select
             onChange={(e) => handleFilterChange('rating', e.target.value)}
             value={searchParams.get('rating') || '0'}
-            className="bg-gray-800/80 px-3 py-2 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 text-white text-sm"
+            className="bg-white bordered-input px-4 py-2.5 rounded-lg text-gray-900 cursor-pointer"
         >
-            <option value="0">Rating</option>
+            <option value="0">Any Rating</option>
             <option value="5">5+ ★</option>
             <option value="6">6+ ★</option>
             <option value="7">7+ ★</option>
@@ -120,7 +115,7 @@ function Filter() {
         <select
             onChange={(e) => handleFilterChange('sortBy', e.target.value)}
             value={searchParams.get('sortBy') || 'popularity.desc'}
-            className="bg-gray-800/80 px-3 py-2 border-0 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600 text-white text-sm"
+            className="bg-white bordered-input px-4 py-2.5 rounded-lg text-gray-900 cursor-pointer"
         >
             {sortOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -130,10 +125,10 @@ function Filter() {
         {/* Alphabetical Sort Button */}
         <button
             onClick={toggleAlphaSort}
-            className={`px-3 py-2 rounded-md text-sm transition-colors ${
+            className={`px-4 py-2.5 rounded-lg font-medium ${
                 alphaSort
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                : 'bg-gray-800/80 text-white hover:bg-gray-700'
+                ? 'bordered-button-primary'
+                : 'bg-white bordered-button text-gray-700'
             }`}
         >
             A-Z {alphaSort === 'asc' ? '↑' : alphaSort === 'desc' ? '↓' : ''}
@@ -146,9 +141,10 @@ function Filter() {
                 setSearchInput('');
                 router.push(pathname);
             }}
-            className="ml-2 px-2 py-1 rounded text-gray-500 hover:text-gray-300 text-sm transition-colors"
+            className="px-4 py-2.5 rounded-lg bg-white bordered-button text-gray-600 text-sm font-medium"
+            title="Clear all filters"
             >
-            ×
+            Clear
             </button>
         )}
         </div>

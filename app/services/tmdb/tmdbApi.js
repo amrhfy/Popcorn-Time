@@ -77,8 +77,8 @@ export const tmdbApi = {
     },
 
     // Search movies
-    searchMovies: async (query) => {
-        const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=en-US&query=${encodeURIComponent(query)}&page=1&include_adult=false`);
+    searchMovies: async (query, page = 1) => {
+        const res = await fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&language=en-US&query=${encodeURIComponent(query)}&page=${page}&include_adult=false`);
         if (!res.ok) {
             throw new Error(`Failed to search movies with query ${query}`);
         }

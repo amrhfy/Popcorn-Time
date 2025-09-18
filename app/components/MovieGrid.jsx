@@ -24,14 +24,21 @@ function MovieGrid({ currentPage, filters }) {
     const fetchMovies = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
-          const data = await tmdbApi.discoverMovies({
-            genre: filters.genre,
-            rating: filters.rating,
-            sortBy: filters.sortBy,
-            page: filters.page,
-          });
+          let data;
+          if (filters.search && filters.search.trim()) {
+            // Use search API if search query exists
+            data = await tmdbApi.searchMovies(filters.search, filters.page);
+          } else {
+            // Use discover API for filtering
+            data = await tmdbApi.discoverMovies({
+              genre: filters.genre,
+              rating: filters.rating,
+              sortBy: filters.sortBy,
+              page: filters.page,
+            });
+          }
           setMovies(data.results);
           setTotalPages(Math.min(data.total_pages, 500));
       } catch (err) {
@@ -52,11 +59,26 @@ function MovieGrid({ currentPage, filters }) {
   }
 
   if (loading) {
-    return <div className="py-8 text-center">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="bg-white bordered-card rounded-lg px-6 py-4 flex items-center gap-3">
+          <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+          <span className="text-gray-700 font-medium">Loading movies...</span>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="py-8 text-red-500 text-center">Error: {error}</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="bg-white bordered-card rounded-lg p-6 max-w-md text-center border-red-300">
+          <div className="text-red-500 text-xl mb-2">⚠️</div>
+          <p className="text-gray-900 mb-2 font-semibold">Something went wrong</p>
+          <p className="text-gray-600 text-sm">{error}</p>
+        </div>
+      </div>
+    );
   }
 
 
@@ -68,30 +90,30 @@ function MovieGrid({ currentPage, filters }) {
         ))}
       </div>
 
-      <div className="flex justify-center items-center gap-2 sm:gap-4 mt-12">
+      <div className="flex justify-center items-center gap-4 mt-8">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 disabled:hover:bg-gray-100 disabled:opacity-40 px-3 sm:px-4 py-2 rounded-lg font-medium text-gray-700 transition-colors duration-200 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-white bordered-button disabled:opacity-40 px-4 py-2.5 rounded-lg font-medium text-gray-700 disabled:cursor-not-allowed"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           <span className="hidden sm:inline">Previous</span>
         </button>
-        
-        <div className="flex items-center bg-gray-50 px-3 sm:px-4 py-2 rounded-lg">
-          <span className="font-medium text-gray-600 text-sm">
-            <span className="text-gray-900">{currentPage}</span>
-            <span className="mx-1 text-gray-400">/</span>
-            <span className="text-gray-500">{totalPages || '...'}</span>
+
+        <div className="bg-white border-2 border-gray-300 px-5 py-2.5 rounded-lg">
+          <span className="font-semibold text-gray-800">
+            <span>{currentPage}</span>
+            <span className="mx-2 text-gray-400">/</span>
+            <span className="text-gray-600">{totalPages || '...'}</span>
           </span>
         </div>
-        
+
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages || totalPages === 0}
-          className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 disabled:hover:bg-gray-100 disabled:opacity-40 px-3 sm:px-4 py-2 rounded-lg font-medium text-gray-700 transition-colors duration-200 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 bg-white bordered-button disabled:opacity-40 px-4 py-2.5 rounded-lg font-medium text-gray-700 disabled:cursor-not-allowed"
         >
           <span className="hidden sm:inline">Next</span>
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
